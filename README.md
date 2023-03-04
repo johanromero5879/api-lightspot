@@ -1,5 +1,5 @@
 # API Lightspot
-An API to handle lightning activity data and uses geocode services
+An API to handle lightning activity data and uses geocode services.
 
 ### Requirements
 - Python 3.11 or above.
@@ -11,4 +11,8 @@ An API to handle lightning activity data and uses geocode services
 4. Copy and paste `.env.example`, rename the copy as `.env`, then set all the environment variables.
 
 ### Execute
-Type the command `python main.py`
+Type the command `python main.py`.
+
+### Unit Tests
+1. Copy and paste `.env.example`, rename the copy as `.env.test`, then set all the environment variables.
+2. Type the command `python run_tests.py`
