@@ -1,0 +1,27 @@
+from pymongo import MongoClient
+
+from app.auth.domain import AuthRepository, AuthOut
+from app.common.infrastructure import MongoAdapter
+
+
+class MongoAuthRepository(MongoAdapter, AuthRepository):
+
+    def __init__(self, client: MongoClient | None = None):
+        super().__init__("users", client)
+
+    def find_by_email(self, email: str) -> AuthOut | None:
+        user_found = self.collection.find_one(
+            {"email": email},
+            {"_id": 1, "password": 1}
+        )
+
+        if user_found:
+            return AuthOut(**user_found)
+
+    def exists_by_email(self, email: str) -> bool:
+        user_found = self.collection.find_one(
+            {"email": email},
+            {"_id": 1}
+        )
+
+        return bool(user_found)

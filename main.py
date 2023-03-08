@@ -8,4 +8,4 @@ load_dotenv()
 PORT = int(getenv("PORT")) if getenv("PORT") else 3000
 
 if __name__ == "__main__":
-    uvicorn.run("app:app", port=PORT, reload=True)
+    uvicorn.run("app.app:init", port=PORT, reload=True)
