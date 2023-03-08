@@ -2,4 +2,9 @@ fastapi
 uvicorn[standard]
 python-dotenv
 pydantic
+email-validator
 pymongo
+python-multipart
+bcrypt
+authlib
+pytest
