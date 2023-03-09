@@ -23,4 +23,7 @@ class MongoRoleRepository(MongoAdapter, RoleRepository):
         self.collection.insert_many(roles)
 
     def replace_permissions(self, id: ObjectId, permissions: list[str]):
-        self.collection.update_one({"_id": id}, {"$set": {"permissions": permissions}})
+        self.collection.update_one(
+            {"_id": id},
+            {"$set": {"permissions": permissions}}
+        )

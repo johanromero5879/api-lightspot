@@ -1,6 +1,8 @@
 from app.common.domain import ValueId
 from app.common.application import BcryptAdapter
-from app.auth.domain import AuthRepository, CredentialsError
+
+from app.auth.domain import AuthRepository
+from app.auth.application import CredentialsError
 
 
 class AuthenticateUser:

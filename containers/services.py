@@ -3,7 +3,10 @@ from dependency_injector.providers import Singleton, DependenciesContainer, Conf
 
 from app.common.application import BcryptAdapter
 from app.common.infrastructure import MongoTransaction, JwtAdapter
+
 from app.auth.application import AuthenticateUser
+
+from app.user.application import UserExists
 
 
 class Services(DeclarativeContainer):
@@ -21,4 +24,9 @@ class Services(DeclarativeContainer):
         AuthenticateUser,
         auth_repository=repositories.auth,
         bcrypt=bcrypt
+    )
+
+    user_exists = Singleton(
+        UserExists,
+        user_repository=repositories.user
     )

@@ -12,6 +12,5 @@ class AuthIn(BaseAuth):
     pass
 
 
-class AuthOut(Entity):
+class AuthOut(BaseAuth):
     id: ValueId = Field(alias="_id")
-    password: str

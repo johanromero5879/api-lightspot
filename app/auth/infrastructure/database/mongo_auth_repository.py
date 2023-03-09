@@ -5,6 +5,11 @@ from app.common.infrastructure import MongoAdapter
 
 
 class MongoAuthRepository(MongoAdapter, AuthRepository):
+    __project = {
+        "_id": 1,
+        "email": 1,
+        "password": 1
+    }
 
     def __init__(self, client: MongoClient | None = None):
         super().__init__("users", client)
@@ -12,7 +17,7 @@ class MongoAuthRepository(MongoAdapter, AuthRepository):
     def find_by_email(self, email: str) -> AuthOut | None:
         user_found = self.collection.find_one(
             {"email": email},
-            {"_id": 1, "password": 1}
+            self.__project
         )
 
         if user_found:

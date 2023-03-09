@@ -10,10 +10,14 @@ class RoleDict(TypedDict):
     permissions: list[str]
 
 
-class RoleIn(Entity):
+class BaseRole(Entity):
     name: str
     permissions: list[str]
 
 
-class RoleOut(RoleIn):
+class RoleIn(BaseRole):
+    pass
+
+
+class RoleOut(BaseRole):
     id: ValueId = Field(alias="_id")
