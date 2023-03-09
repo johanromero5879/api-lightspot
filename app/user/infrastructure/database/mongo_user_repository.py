@@ -7,8 +7,7 @@ from app.user.domain import UserRepository, UserOut
 
 class MongoUserRepository(MongoAdapter, UserRepository):
     __project = {
-        "password": 0,
-        "role": "$role.name"
+        "password": 0
     }
 
     __lookup_role = {
@@ -16,9 +15,11 @@ class MongoUserRepository(MongoAdapter, UserRepository):
         "localField": "role",
         "foreignField": "_id",
         "as": "role",
-        "$project": {
-            "name": 1
-        }
+        "pipeline": [
+            {
+                "$project": {"name": 1}
+            }
+        ]
     }
 
     __unwind_role = {
@@ -41,6 +42,7 @@ class MongoUserRepository(MongoAdapter, UserRepository):
         user = result.next()
 
         if user:
+            user["role"] = user["role"]["name"]
             return UserOut(**user)
 
     def exists_by_id(self, id: ObjectId) -> bool:

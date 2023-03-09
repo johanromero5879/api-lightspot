@@ -5,8 +5,9 @@ from app.common.application import BcryptAdapter
 from app.common.infrastructure import MongoTransaction, JwtAdapter
 
 from app.auth.application import AuthenticateUser
+from app.auth.infrastructure import GetUserPayload
 
-from app.user.application import UserExists
+from app.user.application import UserExists, FindUser
 
 
 class Services(DeclarativeContainer):
@@ -26,7 +27,17 @@ class Services(DeclarativeContainer):
         bcrypt=bcrypt
     )
 
+    get_user_payload = Singleton(
+        GetUserPayload,
+        jwt=jwt
+    )
+
     user_exists = Singleton(
         UserExists,
+        user_repository=repositories.user
+    )
+
+    find_user = Singleton(
+        FindUser,
         user_repository=repositories.user
     )

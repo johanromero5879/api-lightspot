@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from app.auth.infrastructure import auth_controller
+from app.user.infrastructure import user_controller
 
 from config import create_container, initial_setup
 
@@ -12,6 +13,7 @@ def init():
 
     # Routes
     app.include_router(auth_controller.router)
+    app.include_router(user_controller.router)
 
     @app.get("/")
     def root():

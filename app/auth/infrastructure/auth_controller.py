@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie
-
 from dependency_injector.wiring import inject, Provide
 
 from app.common.domain import ValueId
@@ -7,7 +6,7 @@ from app.common.infrastructure import JwtAdapter
 
 from app.auth.application import AuthenticateUser, CredentialsError
 from app.auth.domain import AuthIn
-from app.auth.infrastructure import AuthTokenError, Token, TokenData
+from app.auth.infrastructure import AuthTokenError, Token, GetUserPayload
 
 from app.user.application import UserExists
 
@@ -54,16 +53,17 @@ async def login(
 def refresh(
     response: Response,
     refresh_token: str = Cookie(None),
-    user_exists: UserExists = Depends(Provide["services.user_exists"])
+    user_exists: UserExists = Depends(Provide["services.user_exists"]),
+    get_user_payload: GetUserPayload = Depends(Provide["services.get_user_payload"])
 ):
     if not refresh_token:
-        raise AuthTokenError("Missing refresh token")
+        raise AuthTokenError("missing refresh token")
 
     # Get user_id from the refresh_token
     payload = get_user_payload(refresh_token)
 
     if not user_exists(payload.user_id):
-        raise AuthTokenError("Invalid refresh token")
+        raise AuthTokenError("invalid refresh token")
 
     # Generate new tokens
     access_token, refresh_token = generate_tokens(payload.user_id)
@@ -114,18 +114,3 @@ def generate_token_response(response: Response, access_token: str, refresh_token
         access_token=access_token,
         token_type="bearer"
     )
-
-
-@inject
-def get_user_payload(
-    token: str,
-    jwt: JwtAdapter = Provide["services.jwt"]
-):
-    token_decoded = jwt.decrypt(token)
-    user_id = token_decoded.sub.replace("user_id:", "")
-
-    payload = TokenData(
-        user_id=user_id
-    )
-
-    return payload
