@@ -38,7 +38,7 @@ class JwtAdapter:
             "exp": datetime.utcnow() + timedelta(minutes=expires_minutes)
         }
 
-        return jwt.encode(header, payload, self.__secret_key)
+        return jwt.encode(header, payload, self.__secret_key).decode("utf-8")
 
     def decrypt(self, token: str) -> JwtToken:
         decoded_jwt = jwt.decode(token, self.__secret_key)
