@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from authlib.jose import jwt
+from jose import jwt
 from pydantic import BaseModel
 
 
@@ -31,15 +31,13 @@ class JwtAdapter:
         :param expires_minutes: Time expiration given in minutes
         :return: JWT Token
         """
-        header = {"alg": self.ALGORITHM}
-
         payload = {
             "sub": identifier,
             "exp": datetime.utcnow() + timedelta(minutes=expires_minutes)
         }
 
-        return jwt.encode(header, payload, self.__secret_key).decode("utf-8")
+        return jwt.encode(payload, self.__secret_key, algorithm=self.ALGORITHM)
 
     def decrypt(self, token: str) -> JwtToken:
-        decoded_jwt = jwt.decode(token, self.__secret_key)
+        decoded_jwt = jwt.decode(token, self.__secret_key, algorithms=[self.ALGORITHM])
         return JwtToken(**decoded_jwt)

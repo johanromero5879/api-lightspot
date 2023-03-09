@@ -6,6 +6,6 @@ pydantic
 email-validator
 pymongo
 python-multipart
+python-jose
 bcrypt
-authlib
 pytest
