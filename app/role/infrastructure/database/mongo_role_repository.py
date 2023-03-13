@@ -2,7 +2,7 @@ from pymongo import MongoClient
 from bson import ObjectId
 
 from app.common.infrastructure import MongoAdapter
-from app.role.domain import RoleRepository, RoleDict, RoleOut
+from app.role.domain import RoleRepository, BaseRole, RoleOut
 
 
 class MongoRoleRepository(MongoAdapter, RoleRepository):
@@ -19,8 +19,10 @@ class MongoRoleRepository(MongoAdapter, RoleRepository):
         if role:
             return RoleOut(**role)
 
-    def insert_many(self, roles: list[RoleDict]):
-        self.collection.insert_many(roles)
+    def insert_many(self, roles: list[BaseRole]):
+        self.collection.insert_many(
+            [role.dict() for role in roles]
+        )
 
     def replace_permissions(self, id: ObjectId, permissions: list[str]):
         self.collection.update_one(

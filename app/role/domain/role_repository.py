@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from app.common.domain import ValueId
-from app.role.domain import RoleOut, RoleDict
+from app.role.domain import RoleOut, BaseRole
 
 
 class RoleRepository(ABC):
@@ -14,7 +14,7 @@ class RoleRepository(ABC):
         pass
 
     @abstractmethod
-    def insert_many(self, roles: list[RoleDict]):
+    def insert_many(self, roles: list[BaseRole]):
         pass
 
     @abstractmethod
