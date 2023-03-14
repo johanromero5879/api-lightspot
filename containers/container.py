@@ -11,7 +11,9 @@ class Container(containers.DeclarativeContainer):
     wiring_config = containers.WiringConfiguration(
         packages=[
             "config",
-            "app.auth"
+            "app.auth",
+            "app.user",
+            "app.flash"
         ]
     )
 

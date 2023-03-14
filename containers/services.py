@@ -4,10 +4,16 @@ from dependency_injector.providers import Singleton, DependenciesContainer, Conf
 from app.common.application import BcryptAdapter
 from app.common.infrastructure import MongoTransaction, JwtAdapter
 
+from app.role.application import FindRole
+from app.role.infrastructure import MongoRoleRepository
+
 from app.auth.application import AuthenticateUser
 from app.auth.infrastructure import GetUserPayload
 
 from app.user.application import UserExists, FindUser
+
+from app.flash.application import GetRawFlashes, GetFlashesRecord, InsertFlashes
+from app.flash.infrastructure import NominatimReverseGeocode
 
 
 class Services(DeclarativeContainer):
@@ -21,6 +27,7 @@ class Services(DeclarativeContainer):
     bcrypt = Singleton(BcryptAdapter)
     transaction = Factory(MongoTransaction, client=gateways.database_client)
 
+    # auth
     authenticate_user = Singleton(
         AuthenticateUser,
         auth_repository=repositories.auth,
@@ -32,6 +39,12 @@ class Services(DeclarativeContainer):
         jwt=jwt
     )
 
+    find_role = Singleton(
+        FindRole,
+        role_repository=repositories.role
+    )
+
+    # user
     user_exists = Singleton(
         UserExists,
         user_repository=repositories.user
@@ -40,4 +53,22 @@ class Services(DeclarativeContainer):
     find_user = Singleton(
         FindUser,
         user_repository=repositories.user
+    )
+
+    # flash
+    reverse_geocode = Singleton(
+        NominatimReverseGeocode,
+        api_uri=config.geolocator_api
+    )
+
+    get_raw_flashes = Singleton(GetRawFlashes)
+
+    get_flashes_record = Singleton(
+        GetFlashesRecord,
+        reverse_geocode=reverse_geocode
+    )
+
+    insert_flashes = Singleton(
+        InsertFlashes,
+        flash_repository=repositories.flash
     )
