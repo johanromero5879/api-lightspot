@@ -8,3 +8,11 @@ class AuthTokenError(HTTPException):
             detail=detail,
             headers={"WWW-Authenticate": "Bearer"}
         )
+
+
+class AuthorizationError(HTTPException):
+    def __init__(self, detail: str):
+        super().__init__(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=detail
+        )
