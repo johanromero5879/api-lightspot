@@ -1,6 +1,7 @@
 from fastapi import APIRouter, UploadFile, HTTPException, Depends, status, Security
 from dependency_injector.wiring import Provide, inject
 from pydantic import ValidationError
+from httpx import RequestError
 
 from app.common.application import FileSizeConverter
 
@@ -50,13 +51,13 @@ async def upload_file(
     file_size_limit_megabytes = 3
     file_size_megabytes = FileSizeConverter.bytes_to_megabytes(file.size)
 
+    if extension not in allowed_extensions:
+        raise FormatFileError(f"file must have the following extensions: {allowed_extensions}")
+
+    if file_size_megabytes > file_size_limit_megabytes:
+        raise FormatFileError(f"file size must not be greater than {file_size_limit_megabytes} MB")
+
     try:
-        if extension not in allowed_extensions:
-            raise FormatFileError(f"file must have the following extensions: {allowed_extensions}")
-
-        if file_size_megabytes > file_size_limit_megabytes:
-            raise FormatFileError(f"file size must not be greater than {file_size_limit_megabytes} MB")
-
         content = await file.read()
         records = content.decode("utf-8").splitlines()
         raw_flashes = await get_raw_flashes(records)
@@ -68,15 +69,15 @@ async def upload_file(
         )  # Process the raw flashes and get a list of processed flashes
 
         if len(flashes) == 0:  # Check if there are any processed flashes
-            raise ValueError
+            raise ValueError("there is no flashes to process")
 
         await insert_flashes(flashes)
 
         return RecordsResult(
+            read_file=file.filename,
             original_records=len(raw_flashes),
             processed_records=len(flashes)
         )
-
     except ValidationError as error:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -86,6 +87,11 @@ async def upload_file(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="there was an error uploading the file"
+        )
+    except RequestError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="error on requesting coordinates to the geolocator api"
         )
     finally:
         file.file.close()
