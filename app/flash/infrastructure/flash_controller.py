@@ -3,6 +3,7 @@ from dependency_injector.wiring import Provide, inject
 from pydantic import ValidationError
 from httpx import RequestError
 
+from app.common.domain import DateRange
 from app.common.application import FileSizeConverter
 
 from app.user.domain import UserOut
@@ -10,7 +11,8 @@ from app.user.domain import UserOut
 from app.auth.infrastructure import get_current_user
 from app.role.domain import Permission
 
-from app.flash.application import GetRawFlashes, GetFlashesRecord, InsertFlashes
+from app.flash.domain import Location, FlashQuery
+from app.flash.application import GetRawFlashes, GetFlashesRecord, InsertFlashes, FindFlashesBy
 from app.flash.infrastructure import FormatFileError, RecordsResult
 
 router = APIRouter(
@@ -95,3 +97,28 @@ async def upload_file(
         )
     finally:
         file.file.close()
+
+
+@router.get(
+    path="/"
+)
+@inject
+async def filter_flashes(
+    date_range: DateRange = Depends(),
+    location: Location = Depends(),
+    find_flashes_by: FindFlashesBy = Depends(Provide["services.find_flashes_by"])
+):
+    try:
+        query = FlashQuery(
+            date_range=date_range,
+            location=location
+        )
+
+        flashes = await find_flashes_by(query)
+
+        return flashes
+    except ValueError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(error)
+        )

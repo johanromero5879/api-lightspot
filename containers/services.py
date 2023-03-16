@@ -5,14 +5,13 @@ from app.common.application import BcryptAdapter
 from app.common.infrastructure import MongoTransaction, JwtAdapter
 
 from app.role.application import FindRole
-from app.role.infrastructure import MongoRoleRepository
 
 from app.auth.application import AuthenticateUser
 from app.auth.infrastructure import GetUserPayload
 
 from app.user.application import UserExists, FindUser
 
-from app.flash.application import GetRawFlashes, GetFlashesRecord, InsertFlashes
+from app.flash.application import GetRawFlashes, GetFlashesRecord, InsertFlashes, FindFlashesBy
 from app.flash.infrastructure import NominatimReverseGeocode
 
 
@@ -70,5 +69,10 @@ class Services(DeclarativeContainer):
 
     insert_flashes = Singleton(
         InsertFlashes,
+        flash_repository=repositories.flash
+    )
+
+    find_flashes_by = Singleton(
+        FindFlashesBy,
         flash_repository=repositories.flash
     )
