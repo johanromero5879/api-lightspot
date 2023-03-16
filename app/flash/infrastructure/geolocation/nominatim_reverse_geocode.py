@@ -30,5 +30,5 @@ class NominatimReverseGeocode(ReverseGeocode):
                 country=location.get("country_code"),
                 state=location.get("state") or location.get("region"),
                 province=location.get("state_district"),
-                city=location.get("city") or location.get("county") or location.get("town")
+                city=location.get("county") or location.get("town") or location.get("city")
             )

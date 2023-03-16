@@ -11,16 +11,17 @@ from app.user.domain import UserOut
 from app.auth.infrastructure import get_current_user
 from app.role.domain import Permission
 
-from app.flash.domain import Location, FlashQuery
-from app.flash.application import GetRawFlashes, GetFlashesRecord, InsertFlashes, FindFlashesBy
-from app.flash.infrastructure import FormatFileError, RecordsResult
+from app.flash.domain import Location, FlashQuery, BaseFlash
+from app.flash.application import GetRawFlashes, FindFlashesBy
+from app.flash.infrastructure import FormatFileError, GeocodeApiError, UploadFileError, RecordsResult, \
+    process_flashes_record
 
 router = APIRouter(
     prefix="/flashes",
     tags=["flashes"]
 )
 
-allowed_extensions = ["txt", "loc"]
+ALLOWED_EXTENSIONS = ["txt", "loc"]
 
 
 @router.post(
@@ -31,9 +32,7 @@ allowed_extensions = ["txt", "loc"]
 async def upload_file(
     file: UploadFile,
     user: UserOut = Security(get_current_user, scopes=[Permission.UPLOAD_FLASHES_DATA]),
-    get_raw_flashes: GetRawFlashes = Depends(Provide["services.get_raw_flashes"]),
-    get_flashes_record: GetFlashesRecord = Depends(Provide["services.get_flashes_record"]),
-    insert_flashes: InsertFlashes = Depends(Provide["services.insert_flashes"])
+    get_raw_flashes: GetRawFlashes = Depends(Provide["services.get_raw_flashes"])
 ):
     """
     Handle the uploading of a file containing flash data.
@@ -42,8 +41,6 @@ async def upload_file(
         file: A file to be uploaded containing flash data
         user: The authenticated user with the correct permissions.
         get_raw_flashes: A dependency to get raw flashes from the uploaded file.
-        get_flashes_record: A dependency to process the raw flashes and get processed flashes.
-        insert_flashes: A dependency to insert the processed flashes into the database.
 
     Returns:
         RecordsResult: The result of the upload process, containing the number of original and processed records
@@ -53,8 +50,8 @@ async def upload_file(
     file_size_limit_megabytes = 3
     file_size_megabytes = FileSizeConverter.bytes_to_megabytes(file.size)
 
-    if extension not in allowed_extensions:
-        raise FormatFileError(f"file must have the following extensions: {allowed_extensions}")
+    if extension not in ALLOWED_EXTENSIONS:
+        raise FormatFileError(f"file must have the following extensions: {ALLOWED_EXTENSIONS}")
 
     if file_size_megabytes > file_size_limit_megabytes:
         raise FormatFileError(f"file size must not be greater than {file_size_limit_megabytes} MB")
@@ -64,16 +61,7 @@ async def upload_file(
         records = content.decode("utf-8").splitlines()
         raw_flashes = await get_raw_flashes(records)
 
-        flashes = await get_flashes_record(
-            raw_flashes=raw_flashes,
-            countries=["co"],
-            user_id=user.id
-        )  # Process the raw flashes and get a list of processed flashes
-
-        if len(flashes) == 0:  # Check if there are any processed flashes
-            raise ValueError("there is no flashes to process")
-
-        await insert_flashes(flashes)
+        flashes = await process_flashes_record(raw_flashes, user.id)
 
         return RecordsResult(
             read_file=file.filename,
@@ -86,17 +74,25 @@ async def upload_file(
             detail=error.errors()
         )
     except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="there was an error uploading the file"
-        )
+        raise UploadFileError()
     except RequestError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="error on requesting coordinates to the geolocator api"
-        )
+        raise GeocodeApiError()
     finally:
         file.file.close()
+
+
+@router.post(
+    path="/",
+    status_code=status.HTTP_201_CREATED
+)
+@inject
+async def register_flashes(
+    raw_flashes: list[BaseFlash]
+):
+    try:
+        await process_flashes_record(raw_flashes)
+    except RequestError:
+        raise GeocodeApiError()
 
 
 @router.get(
