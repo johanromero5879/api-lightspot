@@ -8,13 +8,13 @@ from app.common.application import FileSizeConverter
 
 from app.user.domain import UserOut
 
-from app.auth.infrastructure import get_current_user
+from app.auth.infrastructure import get_current_user, verify_device_address
 from app.role.domain import Permission
 
 from app.flash.domain import Location, FlashQuery, BaseFlash
 from app.flash.application import GetRawFlashes, FindFlashesBy
 from app.flash.infrastructure import FormatFileError, GeocodeApiError, UploadFileError, RecordsResult, \
-    process_flashes_record
+    process_flashes_record, FileRecordsResult
 
 router = APIRouter(
     prefix="/flashes",
@@ -26,7 +26,7 @@ ALLOWED_EXTENSIONS = ["txt", "loc"]
 
 @router.post(
     path="/upload",
-    response_model=RecordsResult
+    response_model=FileRecordsResult
 )
 @inject
 async def upload_file(
@@ -63,7 +63,7 @@ async def upload_file(
 
         flashes = await process_flashes_record(raw_flashes, user.id)
 
-        return RecordsResult(
+        return FileRecordsResult(
             read_file=file.filename,
             original_records=len(raw_flashes),
             processed_records=len(flashes)
@@ -83,14 +83,29 @@ async def upload_file(
 
 @router.post(
     path="/",
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(verify_device_address)],
+    response_model=RecordsResult
 )
 @inject
 async def register_flashes(
     raw_flashes: list[BaseFlash]
 ):
     try:
-        await process_flashes_record(raw_flashes)
+        if len(raw_flashes) == 0:
+            raise ValueError("there must be at least one record in raw_flashes")
+
+        flashes = await process_flashes_record(raw_flashes)
+
+        return RecordsResult(
+            original_records=len(raw_flashes),
+            processed_records=len(flashes)
+        )
+    except ValueError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(error)
+        )
     except RequestError:
         raise GeocodeApiError()
 

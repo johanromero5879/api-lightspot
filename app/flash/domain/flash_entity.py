@@ -16,8 +16,8 @@ class BaseFlash(Entity):
     occurrence_date: datetime
     lat: float = Field(ge=-90, le=90)
     lon: float = Field(ge=-180, le=180)
-    residual_fit_error: float = Field(ge=0, le=30)
-    stations: int = Field(ge=5)
+    residual_fit_error: float = Field(ge=0)
+    stations: int = Field(ge=1)
 
 
 class FlashIn(BaseFlash):
