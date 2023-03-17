@@ -1,4 +1,4 @@
-from fastapi import Depends
+from fastapi import Depends, Request
 from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 from dependency_injector.wiring import Provide, inject
 
@@ -6,6 +6,8 @@ from dependency_injector.wiring import Provide, inject
 from app.user.application import UserNotFoundError, FindUser
 from app.role.application import FindRole, RoleNotFound
 from app.auth.infrastructure import AuthTokenError, GetUserPayload, AuthorizationError
+
+from config import WHITELIST
 
 oauth2 = OAuth2PasswordBearer(tokenUrl="auth/token")
 
@@ -48,3 +50,13 @@ async def check_permissions(
 
     except RoleNotFound as error:
         raise AuthorizationError(detail=str(error))
+
+
+async def verify_device_address(request: Request):
+    if request.headers.get("x-forwarded-for"):
+        address = request.headers.get("x-forwarded-for")
+    else:
+        address = request.client.host
+
+    if address not in WHITELIST:
+        raise AuthorizationError("this device is not allowed")

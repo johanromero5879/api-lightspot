@@ -3,4 +3,4 @@ from .token.token import Token, TokenData
 from .response_errors import AuthTokenError, AuthorizationError
 from .token.get_user_payload import GetUserPayload
 
-from .auth_dependencies import get_current_user
+from .auth_dependencies import get_current_user, verify_device_address
