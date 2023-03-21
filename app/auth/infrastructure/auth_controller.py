@@ -106,6 +106,16 @@ async def refresh(
     )
 
 
+@router.delete(
+    path="/token",
+    status_code=status.HTTP_204_NO_CONTENT
+)
+async def logout(
+    response: Response
+):
+    delete_refresh_token_from_cookies(response)
+
+
 @inject
 def generate_tokens(
     user_id: ValueId,
@@ -147,6 +157,7 @@ def register_refresh_token_to_cookies(
     # The httponly flag is set to True, which prevents the cookie from being accessed by JavaScript.
     # The path parameter is set to /auth/token/refresh, which restricts the cookie
     # to only be sent to requests made to this path.
+    # Same site and Secure are necessary for browser can keep and use the cookie.
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
@@ -157,3 +168,14 @@ def register_refresh_token_to_cookies(
         path="/auth/token/refresh"
     )
 
+
+def delete_refresh_token_from_cookies(
+    response: Response
+):
+    response.delete_cookie(
+        key="refresh_token",
+        path="/auth/token/refresh",
+        secure=True,
+        httponly=True,
+        samesite="none"
+    )
