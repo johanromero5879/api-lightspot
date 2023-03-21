@@ -128,7 +128,10 @@ def generate_tokens(
     return access_token, refresh_token
 
 
-def register_refresh_token_to_cookies(response: Response, refresh_token: str):
+def register_refresh_token_to_cookies(
+    response: Response,
+    refresh_token: str
+):
     """
     Generates an HTTP response with a refresh token as a cookie.
 
@@ -148,6 +151,9 @@ def register_refresh_token_to_cookies(response: Response, refresh_token: str):
         key="refresh_token",
         value=refresh_token,
         httponly=True,
+        secure=True,
+        samesite="none",
         max_age=refresh_token_expire_seconds,
         path="/auth/token/refresh"
     )
+
