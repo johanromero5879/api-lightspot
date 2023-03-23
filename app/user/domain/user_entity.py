@@ -1,6 +1,7 @@
 from pydantic import EmailStr, Field
 
 from app.common.domain import Entity, ValueId
+from app.role.domain import BaseRole
 
 
 class BaseUser(Entity):
@@ -14,4 +15,5 @@ class UserIn(BaseUser):
 
 class UserOut(BaseUser):
     id: ValueId = Field(alias="_id")
-    role: str
+    role: BaseRole | str
+

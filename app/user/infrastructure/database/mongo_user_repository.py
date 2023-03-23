@@ -17,7 +17,7 @@ class MongoUserRepository(MongoAdapter, UserRepository):
         "as": "role",
         "pipeline": [
             {
-                "$project": {"name": 1}
+                "$project": {"_id": 0}
             }
         ]
     }
@@ -29,7 +29,7 @@ class MongoUserRepository(MongoAdapter, UserRepository):
     def __init__(self, client: MongoClient | None = None):
         super().__init__("users", client)
 
-    def find_by_id(self, id: ObjectId) -> UserOut | None:
+    def find_by_id(self, id: ObjectId, has_role: bool = False) -> UserOut | None:
 
         result = self.collection.aggregate([
             {"$match": {"_id": id}},
@@ -42,7 +42,9 @@ class MongoUserRepository(MongoAdapter, UserRepository):
         user = result.next()
 
         if user:
-            user["role"] = user["role"]["name"]
+            if not has_role:
+                user["role"] = user["role"]["name"]
+
             return UserOut(**user)
 
     def exists_by_id(self, id: ObjectId) -> bool:
