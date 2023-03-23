@@ -29,7 +29,6 @@ class NominatimReverseGeocode(ReverseGeocode):
             location = Location(
                 country=location.get("country_code"),
                 state=location.get("state") or location.get("region"),
-                province=location.get("state_district"),
                 city=location.get("county") or location.get("town") or location.get("city")
             )
 
@@ -38,9 +37,6 @@ class NominatimReverseGeocode(ReverseGeocode):
     def clean_record(self, location: Location) -> Location:
         if location.state:
             location.state = location.state.replace(".", "")
-
-        if location.province:
-            location.province = location.province.replace(".", "")
 
         if location.city:
             location.city = location.city.replace(".", "")

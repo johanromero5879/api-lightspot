@@ -10,10 +10,13 @@ class FormatFileError(HTTPException):
 
 
 class UploadFileError(HTTPException):
-    def __init__(self):
+    def __init__(self, detail: str | None = None):
+        if not detail:
+            detail = "there was an error uploading the file"
+
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="there was an error uploading the file"
+            detail=detail
         )
 
 

@@ -1,6 +1,5 @@
 from fastapi import APIRouter, UploadFile, HTTPException, Depends, status, Security
 from dependency_injector.wiring import Provide, inject
-from pydantic import ValidationError
 from httpx import RequestError
 
 from app.common.domain import DateRange
@@ -68,13 +67,8 @@ async def upload_file(
             original_records=len(raw_flashes),
             processed_records=len(flashes)
         )
-    except ValidationError as error:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=error.errors()
-        )
-    except ValueError:
-        raise UploadFileError()
+    except ValueError as error:
+        raise UploadFileError(str(error))
     except RequestError:
         raise GeocodeApiError()
     finally:

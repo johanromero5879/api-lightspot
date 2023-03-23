@@ -14,17 +14,19 @@ class GetRawFlashes:
         """
         flashes = []
 
-        for record in records:
+        for index, record in enumerate(records):
             date, time, lat, lon, resid, stations = record.split(",")
 
-            flash = BaseFlash(
-                occurrence_date=datetime.strptime(f'{date} {time}', '%Y/%m/%d %H:%M:%S.%f'),
-                lat=float(lat),
-                lon=float(lon),
-                residual_fit_error=float(resid),
-                stations=int(stations)
-            )
-
-            flashes.append(flash)
+            try:
+                flash = BaseFlash(
+                    occurrence_date=datetime.strptime(f'{date} {time}', '%Y/%m/%d %H:%M:%S.%f'),
+                    lat=float(lat),
+                    lon=float(lon),
+                    residual_fit_error=float(resid),
+                    stations=int(stations)
+                )
+                flashes.append(flash)
+            except ValueError:
+                raise ValueError(f"error on line {index + 1}: {record}")
 
         return flashes

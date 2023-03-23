@@ -8,7 +8,6 @@ from app.common.domain import Entity, ValueId, DateRange
 class Location(Entity):
     country: str
     state: str | None
-    province: str | None
     city: str | None
 
 
