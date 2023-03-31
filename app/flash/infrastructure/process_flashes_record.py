@@ -15,7 +15,7 @@ async def process_flashes_record(
 ):
     flashes = await get_flashes_record(
         raw_flashes=raw_flashes,
-        countries=["co"],
+        countries=["CO"],
         user_id=user_id
     )  # Process the raw flashes and get a list of processed flashes
 

@@ -15,9 +15,11 @@ class GetRawFlashes:
         flashes = []
 
         for index, record in enumerate(records):
-            date, time, lat, lon, resid, stations = record.split(",")
-
             try:
+                date, time, lat, lon, resid, stations = record.split(",")
+
+                date = date.strip()
+                time = time.strip()
                 flash = BaseFlash(
                     occurrence_date=datetime.strptime(f'{date} {time}', '%Y/%m/%d %H:%M:%S.%f'),
                     lat=float(lat),
