@@ -1,5 +1,4 @@
-from app.auth.domain import CredentialsError
-from app.auth.application import AuthenticateUser
+from app.auth.application import AuthenticateUser, CredentialsError
 
 
 def test_authenticate_correct_credentials(container):

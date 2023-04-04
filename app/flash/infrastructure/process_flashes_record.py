@@ -9,13 +9,14 @@ from app.flash.application import GetFlashesRecord, InsertFlashes
 @inject
 async def process_flashes_record(
     raw_flashes: list[BaseFlash],
+    countries: list[str],
     user_id: ValueId | None = None,
     get_flashes_record: GetFlashesRecord = Depends(Provide["services.get_flashes_record"]),
     insert_flashes: InsertFlashes = Depends(Provide["services.insert_flashes"])
 ):
     flashes = await get_flashes_record(
         raw_flashes=raw_flashes,
-        countries=["CO"],
+        countries=countries,
         user_id=user_id
     )  # Process the raw flashes and get a list of processed flashes
 

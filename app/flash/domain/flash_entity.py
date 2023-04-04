@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import Field
 
-from app.common.domain import Entity, ValueId, DateRange
+from app.common.domain import Entity, ValueId, DateRange, DatetimeRange
 
 
 class Location(Entity):
@@ -31,5 +31,5 @@ class FlashOut(BaseFlash):
 
 
 class FlashQuery(Entity):
-    date_range: DateRange
+    date_range: DateRange | DatetimeRange
     location: Location
