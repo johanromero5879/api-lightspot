@@ -20,7 +20,7 @@ router = APIRouter(
     tags=["flashes"]
 )
 
-ALLOWED_EXTENSIONS = ["txt", "loc"]
+ALLOWED_EXTENSIONS = ["txt", "loc", "csv"]
 
 
 @router.post(

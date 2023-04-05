@@ -19,6 +19,9 @@ class GetRawFlashes:
                 date, time, lat, lon, resid, stations = record.split(",")
 
                 date = date.strip()
+                if date[0] == "\ufeff":
+                    date = date[1:]
+
                 time = time.strip()
                 flash = BaseFlash(
                     occurrence_date=datetime.strptime(f'{date} {time}', '%Y/%m/%d %H:%M:%S.%f'),
