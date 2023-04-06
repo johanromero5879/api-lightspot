@@ -33,16 +33,21 @@ class NominatimReverseGeocode(ReverseGeocode):
                 or location.get("village") or location.get("hamlet")
             )
 
-            return self.clean_record(location)
+            return self.clean_location(location)
 
-    def clean_record(self, location: Location) -> Location:
+    def clean_location(self, location: Location) -> Location:
         if location.country:
             location.country = location.country.upper()
 
-        if location.state:
+        if location.state and not location.state.__contains__("RAP"):
             location.state = location.state.replace(".", "").strip()
+        else:
+            location.state = None
 
         if location.city:
             location.city = location.city.replace(".", "").strip()
+
+            if location.city.__contains__("-"):
+                location.city = location.city.split("-")[-1].strip()
 
         return location
