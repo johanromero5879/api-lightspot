@@ -60,7 +60,7 @@ class GetInsights:
 
             if str(item["year"]) != year:
                 year = str(item["year"])
-                years[year] = Year(months={month: 0})
+                years[year] = Year(months=self.get_months_dict())
 
             years[year].total += item["total"]
             years[year].months[month] = item["total"]
@@ -82,6 +82,13 @@ class GetInsights:
             hours=hours_dict,
             most_time_of_day=most_time_of_day
         )
+
+    def get_months_dict(self):
+        months = dict()
+        for month in MONTHS.values():
+            months[month] = 0
+
+        return months
 
     def get_hours(self, hours: list[dict[str, int]]):
         hours_dict = dict()
