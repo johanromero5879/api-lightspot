@@ -1,5 +1,5 @@
 # API Lightspot
-An API to handle lightning activity data and uses geocode services.
+An API to handle lightning activity data provided by [WWLLN](http://wwlln.net/) and uses geocode services.
 
 ### Requirements
 - Python 3.11
