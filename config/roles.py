@@ -11,7 +11,8 @@ def check_roles(
         BaseRole(
             name="admin",
             permissions=[
-                Permission.UPLOAD_FLASHES_DATA
+                Permission.UPLOAD_FLASHES_DATA,
+                Permission.GENERATE_FLASHES_REPORT
             ]
         )
     ]

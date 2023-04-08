@@ -167,6 +167,7 @@ async def insights(
 )
 @inject
 async def reports(
+    user: UserOut = Security(get_current_user, scopes=[Permission.GENERATE_FLASHES_REPORT]),
     utc_offset: str = "+00:00",
     date_range: DateRange = Depends(),
     location: Location = Depends(),
