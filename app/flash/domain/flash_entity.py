@@ -4,6 +4,8 @@ from pydantic import Field
 
 from app.common.domain import Entity, ValueId, DateRange, DatetimeRange
 
+FLASH_DATE_FORMAT = "%Y/%m/%d %H:%M:%S.%f"
+
 
 class Location(Entity):
     country: str

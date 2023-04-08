@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from app.flash.domain import BaseFlash
+from app.flash.domain import BaseFlash, FLASH_DATE_FORMAT
 
 
 class GetRawFlashes:
@@ -24,7 +24,7 @@ class GetRawFlashes:
 
                 time = time.strip()
                 flash = BaseFlash(
-                    occurrence_date=datetime.strptime(f'{date} {time}', '%Y/%m/%d %H:%M:%S.%f'),
+                    occurrence_date=datetime.strptime(f'{date} {time}', FLASH_DATE_FORMAT),
                     lat=float(lat),
                     lon=float(lon),
                     residual_fit_error=float(resid),

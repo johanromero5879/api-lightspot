@@ -1,23 +1,44 @@
-import datetime
+from datetime import date as Date, time as Time, datetime, timedelta, timezone
 import re
 
 
 def date_to_datetime(
-    date: datetime.date,
-    time: datetime.time | str,
+    date: Date,
+    time: Time | str,
     utc_offset: str = "+00:00"
 ):
     if type(time) == str:
         if time == "min":
-            time = datetime.datetime.min.time()
+            time = datetime.min.time()
         else:
-            time = datetime.datetime.max.time()
+            time = datetime.max.time()
 
+    date_time = datetime.combine(date, time)
+
+    return apply_timezone(date_time, utc_offset)
+
+
+def apply_timezone(date: datetime, utc_offset: str):
+    offset = get_utc_offset_timedelta(utc_offset)
+    return date.replace(tzinfo=timezone(offset))
+
+
+def get_datetime_now(utc_offset: str | None = None):
+    if not utc_offset:
+        return datetime.now()
+
+    offset = get_utc_offset_timedelta(utc_offset)
+    tz = timezone(offset)
+
+    return datetime.now(tz=tz)
+
+
+def get_utc_offset_timedelta(utc_offset: str):
+    # Set the timezone
     hours = int(utc_offset.split(":")[0])
-    offset = datetime.timedelta(hours=hours)
-    tz = datetime.timezone(offset)
+    minutes = int(utc_offset.split(":")[1])
 
-    return datetime.datetime.combine(date, time, tz)
+    return timedelta(hours=hours, minutes=minutes)
 
 
 def add_sign_to_utc_offset(offset: str) -> str:

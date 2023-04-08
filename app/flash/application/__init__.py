@@ -5,3 +5,4 @@ from .get_flashes_record import GetFlashesRecord
 from .insert_flashes import InsertFlashes
 from .find_flashes_by import FindFlashesBy
 from .get_insights import GetInsights
+from .generate_flash_report import generate_flash_report

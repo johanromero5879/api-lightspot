@@ -1,4 +1,7 @@
+from datetime import datetime
+
 from fastapi import APIRouter, UploadFile, HTTPException, Depends, status, Security
+from fastapi.responses import StreamingResponse
 from dependency_injector.wiring import Provide, inject
 from httpx import RequestError
 
@@ -11,7 +14,7 @@ from app.auth.infrastructure import get_current_user, verify_device_address
 from app.role.domain import Permission
 
 from app.flash.domain import Location, FlashQuery, BaseFlash, Insight, FlashOut
-from app.flash.application import GetRawFlashes, FindFlashesBy, GetInsights, FlashesNotFoundError
+from app.flash.application import GetRawFlashes, FindFlashesBy, GetInsights, FlashesNotFoundError, generate_flash_report
 from app.flash.infrastructure import FormatFileError, GeocodeApiError, UploadFileError, RecordsResult, \
     process_flashes_record, FileRecordsResult
 
@@ -147,6 +150,51 @@ async def insights(
         result = await get_insights(query, utc_offset)
 
         return result
+    except ValueError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(error)
+        )
+    except FlashesNotFoundError as error:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(error)
+        )
+
+
+@router.get(
+    path="/reports"
+)
+@inject
+async def reports(
+    utc_offset: str = "+00:00",
+    date_range: DateRange = Depends(),
+    location: Location = Depends(),
+    find_flashes_by: FindFlashesBy = Depends(Provide["services.find_flashes_by"])
+):
+    try:
+        query = get_query(location, date_range, utc_offset)
+
+        flashes = await find_flashes_by(query, utc_offset)
+        if len(flashes) == 0:
+            raise FlashesNotFoundError()
+
+        # Generate the PDF report data
+        pdf_name = f"{datetime.utcnow()}.pdf"
+        pdf_data = await generate_flash_report(flashes, query, utc_offset)
+
+        # Define a generator function to stream the PDF data
+        def pdf_stream():
+            yield pdf_data
+
+        # Set the response headers
+        headers = {
+            "Content-Disposition": f"attachment; filename={pdf_name}",
+            "Content-Type": "application/pdf"
+        }
+
+        # Return the PDF data as a streaming response
+        return StreamingResponse(pdf_stream(), headers=headers)
     except ValueError as error:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
