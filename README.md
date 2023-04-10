@@ -1,15 +1,14 @@
-<div style="text-align: center;">
+<div align="center">
     <div>
         <img 
             src="https://raw.github.com/johanromero5879/api-lightspot/main/assets/images/long_logo.png"
             width="50%"
             alt="Lightspot logo"
         />
-        <h1 style="text-align: center;">API</h1>
+        <h1 align="center">API</h1>
     </div>
 </div>
 
----
 An API to handle lightning activity data provided by [WWLLN](http://wwlln.net/) and uses geocode services.
 
 ### Requirements
