@@ -1,4 +1,15 @@
-# API Lightspot
+<div style="text-align: center;">
+    <div>
+        <img 
+            src="https://raw.github.com/johanromero5879/api-lightspot/main/assets/images/long_logo.png"
+            width="50%"
+            alt="Lightspot logo"
+        />
+        <h1 style="text-align: center;">API</h1>
+    </div>
+</div>
+
+---
 An API to handle lightning activity data provided by [WWLLN](http://wwlln.net/) and uses geocode services.
 
 ### Requirements
@@ -39,3 +50,9 @@ Type the command `python main.py`.
 ### Unit Tests
 1. Copy and paste `.env.example`, rename the copy as `.env.test`, then set all the environment variables.
 2. Type the command `python run_tests.py`
+
+### Client
+You can check the client project in this repository: [Karenyepes/lightspot](https://github.com/Karenyepes/lightspot)
+
+---
+_Developed by [Johan Romero](https://github.com/johanromero5879)_
