@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from bson import ObjectId
 from pymongo import MongoClient, DESCENDING
 
 from app.common.infrastructure import MongoAdapter
@@ -14,6 +15,14 @@ class MongoFlashRepository(MongoAdapter, FlashRepository):
         self.collection.insert_many(
             [flash.dict(exclude_none=True) for flash in flashes]
         )
+
+    async def find_by_user(self, user_id: ObjectId, start_date: datetime) -> list[FlashOut]:
+        flashes = self.collection.find(
+            filter={"user": user_id, "created_at": {"$gte": start_date}},
+            projection={"user": 0}
+        ).sort("occurrence_date", DESCENDING)
+
+        return [FlashOut(**flash) for flash in flashes]
 
     async def find_by(self, query: FlashQuery, utc_offset: str) -> list[FlashOut]:
         formatted_query = self.format_query(query)
@@ -40,6 +49,11 @@ class MongoFlashRepository(MongoAdapter, FlashRepository):
             .sort("occurrence_date", DESCENDING)
 
         return [FlashOut(**flash) for flash in flashes]
+
+    async def delete_many_by_user(self, user_id: ObjectId, start_date: datetime) -> bool:
+        result = self.collection.delete_many(filter={"user": user_id, "created_at": {"$gte": start_date}})
+
+        return result.deleted_count > 0
 
     async def count_yearly(self, query: FlashQuery, utc_offset: str):
         formatted_query = self.format_query(query)

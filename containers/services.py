@@ -11,7 +11,8 @@ from app.auth.infrastructure import GetUserPayload
 
 from app.user.application import UserExists, FindUser
 
-from app.flash.application import GetRawFlashes, GetFlashesRecord, InsertFlashes, FindFlashesBy, GetInsights
+from app.flash.application import GetRawFlashes, GetFlashesRecord, InsertFlashes, FindFlashesBy, \
+    GetInsights, FindFlashesByUser, RemoveFlashesLastDay
 from app.flash.infrastructure import NominatimReverseGeocode
 
 
@@ -77,7 +78,17 @@ class Services(DeclarativeContainer):
         flash_repository=repositories.flash
     )
 
+    find_flashes_by_user = Singleton(
+        FindFlashesByUser,
+        flash_repository=repositories.flash
+    )
+
     get_insights = Singleton(
         GetInsights,
+        flash_repository=repositories.flash
+    )
+
+    remove_flashes_last_day = Singleton(
+        RemoveFlashesLastDay,
         flash_repository=repositories.flash
     )

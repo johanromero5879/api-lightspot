@@ -14,7 +14,8 @@ from app.auth.infrastructure import get_current_user, verify_device_address
 from app.role.domain import Permission
 
 from app.flash.domain import Location, FlashQuery, BaseFlash, Insight, FlashOut
-from app.flash.application import GetRawFlashes, FindFlashesBy, GetInsights, FlashesNotFoundError, generate_flash_report
+from app.flash.application import GetRawFlashes, FindFlashesBy, GetInsights, FlashesNotFoundError, \
+    generate_flash_report, FindFlashesByUser, RemoveFlashesLastDay
 from app.flash.infrastructure import FormatFileError, GeocodeApiError, UploadFileError, RecordsResult, \
     process_flashes_record, FileRecordsResult
 
@@ -163,11 +164,13 @@ async def insights(
 
 
 @router.get(
-    path="/reports"
+    path="/reports",
+    dependencies=[
+        Security(get_current_user, scopes=[Permission.GENERATE_FLASHES_REPORT])
+    ]
 )
 @inject
 async def reports(
-    user: UserOut = Security(get_current_user, scopes=[Permission.GENERATE_FLASHES_REPORT]),
     utc_offset: str = "+00:00",
     date_range: DateRange = Depends(),
     location: Location = Depends(),
@@ -236,3 +239,68 @@ def format_query(query: FlashQuery, utc_offset: str) -> FlashQuery:
     query.date_range.end_date = date_to_datetime(query.date_range.end_date, "max", utc_offset)
 
     return query
+
+
+@router.get(
+    path="/{time_period}",
+    response_model=list[FlashOut]
+)
+@inject
+async def get_flashes_by_user(
+    time_period: str,
+    user: UserOut = Depends(get_current_user),
+    find_flashes_by_user: FindFlashesByUser = Depends(Provide["services.find_flashes_by_user"])
+):
+    """
+    This endpoint retrieves all flashes uploaded by the authenticated user within a specific time period
+
+    Parameters:
+        time_period: The time period to search for flashes, specified as a string
+        with one of the following values:
+            - week: Retrieve all flashes uploaded within the last 7 days.
+            - day: Retrieve all flashes uploaded within the last 24 hours.
+            - hour: Retrieve all flashes uploaded within the last hour.
+        user: The authenticated user with the correct permissions.
+        find_flashes_by_user: A dependency injection that provides the find_flashes_by_user service.
+
+    Returns:
+        A list of FlashOut object.
+    """
+    try:
+        if time_period not in ["week", "day", "hour", "minute"]:
+            raise ValueError("Time period not valid")
+
+        time_period = f"1 {time_period}s"
+
+        flashes = await find_flashes_by_user(
+            user_id=user.id,
+            period=time_period
+        )
+
+        return flashes
+    except ValueError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(error)
+        )
+
+
+@router.delete(
+    path="/last-day",
+    status_code=status.HTTP_204_NO_CONTENT
+)
+@inject
+async def delete_flashes_last_day(
+    user: UserOut = Security(get_current_user, scopes=[Permission.REMOVE_MY_UPLOADED_FLASHES]),
+    remove_flashes_last_day: RemoveFlashesLastDay = Depends(Provide["services.remove_flashes_last_day"])
+):
+    """
+    This endpoint deletes all flashes uploaded by the authenticated user within the last hour.
+    """
+    deleted = await remove_flashes_last_day(user_id=user.id)
+
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="No flashes to delete"
+        )

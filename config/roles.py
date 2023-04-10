@@ -12,7 +12,8 @@ def check_roles(
             name="admin",
             permissions=[
                 Permission.UPLOAD_FLASHES_DATA,
-                Permission.GENERATE_FLASHES_REPORT
+                Permission.GENERATE_FLASHES_REPORT,
+                Permission.REMOVE_MY_UPLOADED_FLASHES
             ]
         )
     ]

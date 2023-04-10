@@ -41,6 +41,42 @@ def get_utc_offset_timedelta(utc_offset: str):
     return timedelta(hours=hours, minutes=minutes)
 
 
+def subtract_time(date: datetime, period: str):
+    time_delta = get_timedelta(period)
+    earlier_date = date - time_delta
+
+    return earlier_date
+
+
+def get_timedelta(period: str):
+    num, period = re.split(r"\s+", period)
+
+    try:
+        if not num and not period:
+            raise ValueError()
+
+        num = int(num)
+        if num <= 0 or num > 99999999:
+            raise ValueError()
+
+        period = period.strip()
+        if period == "weeks":
+            return timedelta(weeks=num)
+
+        if period == "days":
+            return timedelta(days=num)
+
+        if period == "hours":
+            return timedelta(hours=num)
+
+        if period == "minutes":
+            return timedelta(minutes=num)
+
+        raise ValueError()
+    except ValueError:
+        raise ValueError("Time period not valid")
+
+
 def add_sign_to_utc_offset(offset: str) -> str:
     if not re.match(r"^[-+]", offset):
         offset = f"+{offset.strip()}"

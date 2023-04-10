@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 
+from app.common.domain import ValueId
 from app.flash.domain import FlashIn, FlashQuery, FlashOut
 
 
@@ -10,6 +12,14 @@ class FlashRepository(ABC):
 
     @abstractmethod
     async def find_by(self, query: FlashQuery, utc_offset: str) -> list[FlashOut]:
+        pass
+
+    @abstractmethod
+    async def find_by_user(self, user_id: ValueId, start_date: datetime) -> list[FlashOut]:
+        pass
+
+    @abstractmethod
+    async def delete_many_by_user(self, user_id: ValueId, start_date: datetime) -> bool:
         pass
 
     @abstractmethod
