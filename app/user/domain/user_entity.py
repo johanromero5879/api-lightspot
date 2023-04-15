@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import EmailStr, Field
 
 from app.common.domain import Entity, ValueId
@@ -10,7 +12,10 @@ class BaseUser(Entity):
 
 
 class UserIn(BaseUser):
+    fullname: str = Field(min_length=2, max_length=50)
     email: EmailStr
+    role: ValueId
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
 class UserOut(BaseUser):

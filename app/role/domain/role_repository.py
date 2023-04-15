@@ -14,6 +14,10 @@ class RoleRepository(ABC):
         pass
 
     @abstractmethod
+    def exists_by_name(self, name: str) -> bool:
+        pass
+
+    @abstractmethod
     def insert_many(self, roles: list[BaseRole]):
         pass
 

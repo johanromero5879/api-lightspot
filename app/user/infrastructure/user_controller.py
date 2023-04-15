@@ -1,7 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
+from dependency_injector.wiring import Provide, inject
 
 from app.auth.infrastructure import get_current_user
-from app.user.domain import UserOut
+from app.role.application import FindRole, RoleNotFound
+from app.user.domain import UserOut, UserIn
+from app.user.application import RegisterUser, EmailFoundError, SendEmailToNewUser
 
 router = APIRouter(
     prefix="/users",
@@ -14,3 +17,33 @@ async def get_my_info(
     user: UserOut = Depends(get_current_user)
 ):
     return user
+
+
+@router.post(
+    path="/",
+    status_code=status.HTTP_201_CREATED
+)
+@inject
+async def create_user(
+    user: UserIn,
+    find_role: FindRole = Depends(Provide["services.find_role"]),
+    register_user: RegisterUser = Depends(Provide["services.register_user"]),
+    send_email_to_new_user: SendEmailToNewUser = Depends(Provide["services.send_email_to_new_user"])
+):
+    try:
+        role = find_role(name=user.role)
+        user.role = role.id
+
+        user = await register_user(user)
+        send_email_to_new_user(user)
+
+    except EmailFoundError as error:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(error)
+        )
+    except RoleNotFound as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(error)
+        )

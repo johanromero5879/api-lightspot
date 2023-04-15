@@ -19,6 +19,10 @@ class MongoRoleRepository(MongoAdapter, RoleRepository):
         if role:
             return RoleOut(**role)
 
+    def exists_by_name(self, name: str) -> bool:
+        role = self.collection.find_one({"name": name})
+        return bool(role)
+
     def insert_many(self, roles: list[BaseRole]):
         self.collection.insert_many(
             [role.dict() for role in roles]

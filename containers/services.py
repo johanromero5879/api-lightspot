@@ -2,14 +2,14 @@ from dependency_injector.containers import DeclarativeContainer
 from dependency_injector.providers import Singleton, DependenciesContainer, Configuration, Factory
 
 from app.common.application import BcryptAdapter
-from app.common.infrastructure import MongoTransaction, JwtAdapter
+from app.common.infrastructure import MongoTransaction, JwtAdapter, SendEmail
 
 from app.role.application import FindRole
 
-from app.auth.application import AuthenticateUser
+from app.auth.application import AuthenticateUser, IsNewUser, RegisterPassword
 from app.auth.infrastructure import GetUserPayload
 
-from app.user.application import UserExists, FindUser
+from app.user.application import UserExists, FindUser, RegisterUser, SendEmailToNewUser
 
 from app.flash.application import GetRawFlashes, GetFlashesRecord, InsertFlashes, FindFlashesBy, \
     GetInsights, FindFlashesByUser, RemoveFlashesLastDay
@@ -27,6 +27,14 @@ class Services(DeclarativeContainer):
     bcrypt = Singleton(BcryptAdapter)
     transaction = Factory(MongoTransaction, client=gateways.database_client)
 
+    # common
+    send_email = Singleton(
+        SendEmail,
+        server=config.smtp.server,
+        username=config.smtp.username,
+        password=config.smtp.password
+    )
+
     # auth
     authenticate_user = Singleton(
         AuthenticateUser,
@@ -39,7 +47,23 @@ class Services(DeclarativeContainer):
         jwt=jwt
     )
 
+    is_new_user = Singleton(
+        IsNewUser,
+        auth_repository=repositories.auth
+    )
+
+    register_password = Singleton(
+        RegisterPassword,
+        auth_repository=repositories.auth,
+        bcrypt=bcrypt
+    )
+
     find_role = Singleton(
+        FindRole,
+        role_repository=repositories.role
+    )
+
+    exists_by_name = Singleton(
         FindRole,
         role_repository=repositories.role
     )
@@ -53,6 +77,18 @@ class Services(DeclarativeContainer):
     find_user = Singleton(
         FindUser,
         user_repository=repositories.user
+    )
+
+    register_user = Singleton(
+        RegisterUser,
+        user_repository=repositories.user
+    )
+
+    send_email_to_new_user = Singleton(
+        SendEmailToNewUser,
+        send_email=send_email,
+        client_url=config.client.url,
+        jwt=jwt
     )
 
     # flash

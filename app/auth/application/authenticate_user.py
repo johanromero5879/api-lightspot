@@ -14,7 +14,7 @@ class AuthenticateUser:
     def __call__(self, email: str, password: str) -> ValueId:
         user_found = self.__auth_repository.find_by_email(email)
 
-        if not user_found or not self.__bcrypt.compare(password, user_found.password):
+        if not user_found or not user_found.password or not self.__bcrypt.compare(password, user_found.password):
             raise CredentialsError()
 
         return user_found.id

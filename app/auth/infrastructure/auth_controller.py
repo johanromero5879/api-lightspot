@@ -4,11 +4,11 @@ from dependency_injector.wiring import inject, Provide
 from app.common.domain import ValueId
 from app.common.infrastructure import JwtAdapter
 
-from app.auth.application import AuthenticateUser, CredentialsError
-from app.auth.domain import AuthIn
-from app.auth.infrastructure import AuthTokenError, Token, GetUserPayload
+from app.auth.application import AuthenticateUser, CredentialsError, RegisterPassword
+from app.auth.domain import AuthIn, Password
+from app.auth.infrastructure import AuthTokenError, Token, get_new_user_id, TokenData, GetUserPayload
 
-from app.user.application import UserExists
+from app.user.application import UserExists, UserNotFoundError
 
 router = APIRouter(
     prefix="/auth",
@@ -114,6 +114,47 @@ async def logout(
     response: Response
 ):
     delete_refresh_token_from_cookies(response)
+
+
+@router.get(
+    path="/registration"
+)
+@inject
+async def verify_new_user(
+    user_id: ValueId = Depends(get_new_user_id)
+):
+    return bool(user_id)
+
+
+@router.post(
+    path="/password",
+    status_code=status.HTTP_201_CREATED,
+    response_model=TokenData
+)
+@inject
+async def create_password(
+    response: Response,
+    pw: Password,
+    user_id: ValueId = Depends(get_new_user_id),
+    register_password: RegisterPassword = Depends(Provide["services.register_password"])
+):
+
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This is not a new user"
+        )
+
+    register_password(user_id, pw.password)
+
+    # Auto-login
+    access_token, refresh_token = generate_tokens(user_id)
+    register_refresh_token_to_cookies(response, refresh_token)
+
+    return Token(
+        access_token=access_token,
+        token_type="bearer"
+    )
 
 
 @inject

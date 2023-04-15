@@ -2,7 +2,7 @@ from pymongo import MongoClient
 from bson import ObjectId
 
 from app.common.infrastructure import MongoAdapter
-from app.user.domain import UserRepository, UserOut
+from app.user.domain import UserRepository, UserOut, UserIn
 
 
 class MongoUserRepository(MongoAdapter, UserRepository):
@@ -54,3 +54,16 @@ class MongoUserRepository(MongoAdapter, UserRepository):
         )
 
         return bool(user)
+
+    def exists_by_email(self, email: str) -> bool:
+        user = self.collection.find_one(
+            {"email": email},
+            {"_id": 1}
+        )
+
+        return bool(user)
+
+    def insert_one(self, user: UserIn) -> UserOut:
+        result = self.collection.insert_one(user.dict())
+
+        return self.find_by_id(result.inserted_id, has_role=True)
