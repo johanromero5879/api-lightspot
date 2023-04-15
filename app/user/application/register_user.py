@@ -8,6 +8,7 @@ class RegisterUser:
         self.__user_repository = user_repository
 
     async def __call__(self, user: UserIn) -> ValueId:
+        user.fullname = user.fullname.strip()
         user.email = user.email.strip()
         user_found = self.__user_repository.exists_by_email(user.email)
 

@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.auth.infrastructure import auth_controller
 from app.user.infrastructure import user_controller
 from app.flash.infrastructure import flash_controller
+from app.role.infrastructure import role_controller
 
 from config import create_container, initial_setup, ALLOWED_ORIGINS
 
@@ -26,6 +27,7 @@ def init():
     app.include_router(auth_controller.router)
     app.include_router(user_controller.router)
     app.include_router(flash_controller.router)
+    app.include_router(role_controller.router)
 
     @app.get("/")
     def root():

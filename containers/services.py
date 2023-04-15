@@ -4,7 +4,7 @@ from dependency_injector.providers import Singleton, DependenciesContainer, Conf
 from app.common.application import BcryptAdapter
 from app.common.infrastructure import MongoTransaction, JwtAdapter, SendEmail
 
-from app.role.application import FindRole
+from app.role.application import FindRole, FindRoles
 
 from app.auth.application import AuthenticateUser, IsNewUser, RegisterPassword
 from app.auth.infrastructure import GetUserPayload
@@ -56,6 +56,11 @@ class Services(DeclarativeContainer):
         RegisterPassword,
         auth_repository=repositories.auth,
         bcrypt=bcrypt
+    )
+
+    find_roles = Singleton(
+        FindRoles,
+        role_repository=repositories.role
     )
 
     find_role = Singleton(

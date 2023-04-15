@@ -38,7 +38,14 @@ def update_permissions(
         role_found = next(filter(lambda r: r.name == role.name, default_roles), None)
 
         if role_found and len(role_found.permissions) > 0:
-            role_repository.replace_permissions(role.id, role_found.permissions)
+            role_repository.replace_permissions(role.name, role_found.permissions)
+
+    # save default roles that are not in db
+    for role in default_roles:
+        role_found = next(filter(lambda r: r.name == role.name, roles), None)
+
+        if not role_found and len(role.permissions) > 0:
+            role_repository.insert_one(role)
 
 
 @inject

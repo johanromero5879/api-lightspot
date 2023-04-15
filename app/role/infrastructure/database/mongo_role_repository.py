@@ -1,5 +1,4 @@
-from pymongo import MongoClient
-from bson import ObjectId
+from pymongo import MongoClient, ASCENDING
 
 from app.common.infrastructure import MongoAdapter
 from app.role.domain import RoleRepository, BaseRole, RoleOut
@@ -10,7 +9,7 @@ class MongoRoleRepository(MongoAdapter, RoleRepository):
         super().__init__("roles", client)
 
     def find_all(self) -> list[RoleOut]:
-        roles = self.collection.find()
+        roles = self.collection.find().sort("name", ASCENDING)
 
         return [RoleOut(**role) for role in roles]
 
@@ -28,8 +27,11 @@ class MongoRoleRepository(MongoAdapter, RoleRepository):
             [role.dict() for role in roles]
         )
 
-    def replace_permissions(self, id: ObjectId, permissions: list[str]):
+    def insert_one(self, role: BaseRole):
+        self.collection.insert_one(role.dict())
+
+    def replace_permissions(self, name: str, permissions: list[str]):
         self.collection.update_one(
-            {"_id": id},
+            {"name": name},
             {"$set": {"permissions": permissions}}
         )

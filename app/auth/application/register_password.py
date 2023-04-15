@@ -9,5 +9,5 @@ class RegisterPassword:
         self.__bcrypt = bcrypt
 
     def __call__(self, user_id: ValueId, password: str) -> bool:
-        password = self.__bcrypt.hash(password)
+        password = self.__bcrypt.hash(password.strip())
         return self.__auth_repository.set_password(user_id, password)

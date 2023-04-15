@@ -22,5 +22,9 @@ class RoleRepository(ABC):
         pass
 
     @abstractmethod
-    def replace_permissions(self, id: ValueId, permissions: list[str]):
+    def insert_one(self, role: BaseRole):
+        pass
+
+    @abstractmethod
+    def replace_permissions(self, name: str, permissions: list[str]):
         pass

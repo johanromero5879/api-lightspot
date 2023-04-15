@@ -13,7 +13,8 @@ class Container(containers.DeclarativeContainer):
             "config",
             "app.auth",
             "app.user",
-            "app.flash"
+            "app.flash",
+            "app.role"
         ]
     )
 
