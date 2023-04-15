@@ -15,7 +15,7 @@ class UploadFileError(HTTPException):
             detail = "there was an error uploading the file"
 
         super().__init__(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_409_CONFLICT,
             detail=detail
         )
 
@@ -23,6 +23,6 @@ class UploadFileError(HTTPException):
 class GeocodeApiError(HTTPException):
     def __init__(self):
         super().__init__(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_409_CONFLICT,
             detail="error on requesting coordinates to the geolocator api"
         )
