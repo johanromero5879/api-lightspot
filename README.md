@@ -43,6 +43,10 @@ Take into account:
 3. Install the dependencies on the root with the command: `pip install -r requirements.txt`.
 4. Copy and paste `.env.example`, rename the copy as `.env`, then set all the environment variables.
 
+### Notes
+- Make sure to put an email that has enabled SMTP settings, otherwise features 
+that envolved email sending will not work. 
+
 ### Execute
 Type the command `python main.py`.
 
