@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Security
 from dependency_injector.wiring import Provide, inject
 
 from app.auth.infrastructure import get_current_user
+from app.role.domain import Permission
 from app.role.application import FindRole, RoleNotFound
 from app.user.domain import UserOut, UserIn
 from app.user.application import RegisterUser, EmailFoundError, SendEmailToNewUser
@@ -21,7 +22,8 @@ async def get_my_info(
 
 @router.post(
     path="/",
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Security(get_current_user, scopes=[Permission.REGISTER_USERS])]
 )
 @inject
 async def create_user(
