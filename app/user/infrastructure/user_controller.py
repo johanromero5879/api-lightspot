@@ -4,8 +4,8 @@ from dependency_injector.wiring import Provide, inject
 from app.auth.infrastructure import get_current_user
 from app.role.domain import Permission
 from app.role.application import FindRole, RoleNotFound
-from app.user.domain import UserOut, UserIn
-from app.user.application import RegisterUser, EmailFoundError, SendEmailToNewUser
+from app.user.domain import UserOut, UserIn, UserList
+from app.user.application import RegisterUser, EmailFoundError, SendEmailToNewUser, FindUsers
 
 router = APIRouter(
     prefix="/users",
@@ -45,6 +45,26 @@ async def create_user(
             detail=str(error)
         )
     except RoleNotFound as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(error)
+        )
+
+
+@router.get(
+    path="/",
+    response_model=UserList,
+    dependencies=[Security(get_current_user, scopes=[Permission.GET_USERS])]
+)
+@inject
+async def get_users(
+    limit: int = 5,
+    page: int = 1,
+    find_users: FindUsers = Depends(Provide["services.find_users"])
+):
+    try:
+        return find_users(limit, page)
+    except ValueError as error:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(error)

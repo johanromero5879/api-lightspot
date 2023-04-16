@@ -22,3 +22,7 @@ class UserOut(BaseUser):
     id: ValueId = Field(alias="_id")
     role: BaseRole | str
 
+
+class UserList(Entity):
+    total: int
+    users: list[UserOut]

@@ -9,7 +9,7 @@ from app.role.application import FindRole, FindRoles
 from app.auth.application import AuthenticateUser, IsNewUser, RegisterPassword
 from app.auth.infrastructure import GetUserPayload
 
-from app.user.application import UserExists, FindUser, RegisterUser, SendEmailToNewUser
+from app.user.application import UserExists, FindUser, RegisterUser, SendEmailToNewUser, FindUsers
 
 from app.flash.application import GetRawFlashes, GetFlashesRecord, InsertFlashes, FindFlashesBy, \
     GetInsights, FindFlashesByUser, RemoveFlashesLastDay
@@ -81,6 +81,11 @@ class Services(DeclarativeContainer):
 
     find_user = Singleton(
         FindUser,
+        user_repository=repositories.user
+    )
+
+    find_users = Singleton(
+        FindUsers,
         user_repository=repositories.user
     )
 

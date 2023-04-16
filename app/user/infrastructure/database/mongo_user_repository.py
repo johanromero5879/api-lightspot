@@ -1,8 +1,8 @@
-from pymongo import MongoClient
+from pymongo import MongoClient, DESCENDING
 from bson import ObjectId
 
 from app.common.infrastructure import MongoAdapter
-from app.user.domain import UserRepository, UserOut, UserIn
+from app.user.domain import UserRepository, UserOut, UserIn, UserList
 
 
 class MongoUserRepository(MongoAdapter, UserRepository):
@@ -46,6 +46,30 @@ class MongoUserRepository(MongoAdapter, UserRepository):
                 user["role"] = user["role"]["name"]
 
             return UserOut(**user)
+
+    def find_all(self, limit: int, skip: int, has_role: bool = False) -> UserList:
+        total = self.collection.estimated_document_count()
+        result = self.collection.aggregate([
+            {"$sort": {"created_at": DESCENDING}},
+            {"$skip": skip},
+            {"$limit": limit},
+            {"$project": self.__project},
+            {"$lookup": self.__lookup_role},
+            {"$unwind": self.__unwind_role}
+        ])
+
+        users = []
+
+        for user in result:
+            if not has_role:
+                user["role"] = user["role"]["name"]
+
+            users.append(UserOut(**user))
+
+        return UserList(
+            total=total,
+            users=users
+        )
 
     def exists_by_id(self, id: ObjectId) -> bool:
         user = self.collection.find_one(
