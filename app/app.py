@@ -11,7 +11,11 @@ from config import create_container, initial_setup, ALLOWED_ORIGINS
 
 def init():
     # App setup
-    app = FastAPI()
+    app = FastAPI(
+        title="Lightspot",
+        description="An API to handle lightning activity data provided by WWLLN and uses geocode services.",
+        version="0.9.0"
+    )
     app.container = create_container()
 
     # Middlewares

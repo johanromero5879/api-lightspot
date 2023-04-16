@@ -5,7 +5,7 @@
             width="50%"
             alt="Lightspot logo"
         />
-        <h1 align="center">API</h1>
+        <h1 align="center">API v0.9.0</h1>
     </div>
 </div>
 
