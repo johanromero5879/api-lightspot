@@ -50,7 +50,7 @@ async def upload_file(
     """
 
     extension = file.filename.split(".")[-1]
-    file_size_limit_megabytes = 3
+    file_size_limit_megabytes = 7
     file_size_megabytes = FileSizeConverter.bytes_to_megabytes(file.size)
 
     if extension not in ALLOWED_EXTENSIONS:
