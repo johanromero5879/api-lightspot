@@ -16,6 +16,23 @@ class MongoFlashRepository(MongoAdapter, FlashRepository):
             [flash.dict(exclude_none=True) for flash in flashes]
         )
 
+    async def exists_file(self, file: str) -> bool:
+        flashes = self.collection.find_one(
+            filter={"file": file},
+            projection={"_id": 1}
+        )
+
+        return bool(flashes)
+
+    async def find_files_by(self, user_id: ObjectId, start_date: datetime) -> list[str]:
+        files = self.collection.aggregate([
+            {"$match": {"user": user_id, "created_at": {"$gte": start_date}}},
+            {"$sort": {"created_at": DESCENDING}},
+            {"$group": {"_id": "$file"}}
+        ])
+
+        return [file["_id"] for file in files]
+
     async def find_by_user(self, user_id: ObjectId, start_date: datetime) -> list[FlashOut]:
         flashes = self.collection.find(
             filter={"user": user_id, "created_at": {"$gte": start_date}},
@@ -50,8 +67,18 @@ class MongoFlashRepository(MongoAdapter, FlashRepository):
 
         return [FlashOut(**flash) for flash in flashes]
 
-    async def delete_many_by_user(self, user_id: ObjectId, start_date: datetime) -> bool:
-        result = self.collection.delete_many(filter={"user": user_id, "created_at": {"$gte": start_date}})
+    async def delete_many_by_user(
+        self,
+        user_id: ObjectId,
+        start_date: datetime,
+        file: str | None = None
+    ) -> bool:
+        filter = {"user": user_id, "created_at": {"$gte": start_date}}
+
+        if file:
+            filter["file"] = file
+
+        result = self.collection.delete_many(filter=filter)
 
         return result.deleted_count > 0
 

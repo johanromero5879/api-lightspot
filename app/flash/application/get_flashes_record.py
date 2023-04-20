@@ -13,6 +13,7 @@ class GetFlashesRecord:
     async def __call__(self,
                        raw_flashes: list[BaseFlash],
                        countries: list[str],
+                       file: str | None = None,
                        user_id: ValueId | None = None
                        ) -> list[FlashIn]:
         """
@@ -20,7 +21,8 @@ class GetFlashesRecord:
         and returns a list of flash objects.
 
         :param raw_flashes: A list of raw flash objects to process.
-        :param countries: A list of lowercase country names to filter the flashes by, given ISO 3166-1 Alpha-2 code
+        :param countries: A list of country codes to filter the flashes by, given in ISO 3166-1 Alpha-2 code
+        :param filename: An optional filename to identify a bunch of flashes.
         :param user_id: An optional user ID to assign to the records.
 
         :return: A list of FlashIn objects that match the specified countries.
@@ -34,7 +36,7 @@ class GetFlashesRecord:
                 chunk = raw_flashes[index:index + chunk_size]
 
                 # Create a list of coroutines to fetch flash data for each flash in the current chunk
-                tasks = [self.get_flash_with_location(flash, user_id, client) for flash in chunk]
+                tasks = [self.get_flash_with_location(flash, file, user_id, client) for flash in chunk]
 
                 # Wait for all the coroutines to finish and get their results
                 results = await gather(*tasks)
@@ -50,12 +52,14 @@ class GetFlashesRecord:
 
     async def get_flash_with_location(self,
                                       flash: BaseFlash,
+                                      file: str | None,
                                       user_id: ValueId | None,
                                       client: AsyncClient) -> FlashIn | None:
         """
         Fetches a FlashIn object for the specified raw flash object and adds location and user data.
 
         :param flash: The raw flash object to fetch data for.
+        :param file: An optional filename to identify a bunch of flashes.
         :param user_id: An optional user ID to include in the output.
         :param client: The httpx AsyncClient instance to use for making API requests.
 
@@ -67,5 +71,6 @@ class GetFlashesRecord:
             return FlashIn(
                 **flash.dict(exclude_none=True),
                 location=location,
+                file=file,
                 user=user_id
             )

@@ -25,11 +25,13 @@ class FlashIn(BaseFlash):
     location: Location
     created_at: datetime = Field(default_factory=datetime.utcnow)
     user: ValueId | None = None
+    file: str | None = None
 
 
 class FlashOut(BaseFlash):
     location: Location
     id: ValueId = Field(alias="_id")
+    file: str | None
 
 
 class FlashQuery(Entity):

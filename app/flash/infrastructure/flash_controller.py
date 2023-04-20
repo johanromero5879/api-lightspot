@@ -15,7 +15,7 @@ from app.role.domain import Permission
 
 from app.flash.domain import Location, FlashQuery, BaseFlash, Insight, FlashOut
 from app.flash.application import GetRawFlashes, FindFlashesBy, GetInsights, FlashesNotFoundError, \
-    generate_flash_report, FindFlashesByUser, RemoveFlashesLastDay
+    generate_flash_report, FindFlashesByUser, RemoveFlashesLastDay, ExistsFile
 from app.flash.infrastructure import FormatFileError, GeocodeApiError, UploadFileError, RecordsResult, \
     process_flashes_record, FileRecordsResult
 
@@ -35,6 +35,7 @@ ALLOWED_EXTENSIONS = ["txt", "loc", "csv"]
 async def upload_file(
     file: UploadFile,
     user: UserOut = Security(get_current_user, scopes=[Permission.UPLOAD_FLASHES_DATA]),
+    exists_flashes_file: ExistsFile = Depends(Provide["services.exists_flashes_file"]),
     get_raw_flashes: GetRawFlashes = Depends(Provide["services.get_raw_flashes"])
 ):
     """
@@ -43,6 +44,7 @@ async def upload_file(
     Parameters:
         file: A file to be uploaded containing flash data.
         user: The authenticated user with the correct permissions.
+        exists_flashes_file: A dependency to check if a filename was used before.
         get_raw_flashes: A dependency to get raw flashes from the uploaded file.
 
     Returns:
@@ -50,6 +52,7 @@ async def upload_file(
     """
 
     extension = file.filename.split(".")[-1]
+    filename = file.filename
     file_size_limit_megabytes = 7
     file_size_megabytes = FileSizeConverter.bytes_to_megabytes(file.size)
 
@@ -60,15 +63,20 @@ async def upload_file(
         raise FormatFileError(f"file size must not be greater than {file_size_limit_megabytes} MB")
 
     try:
+        exists_filename = await exists_flashes_file(filename)
+
+        if exists_filename:
+            raise ValueError(f"File {filename} was already uploaded")
+
         content = await file.read()
         records = content.decode("utf-8").splitlines()
         raw_flashes = await get_raw_flashes(records)
 
         countries = ["CO"]
-        flashes = await process_flashes_record(raw_flashes, countries, user.id)
+        flashes = await process_flashes_record(raw_flashes, countries, filename, user.id)
 
         return FileRecordsResult(
-            read_file=file.filename,
+            read_file=filename,
             original_records=len(raw_flashes),
             processed_records=len(flashes)
         )
@@ -242,8 +250,7 @@ def format_query(query: FlashQuery, utc_offset: str) -> FlashQuery:
 
 
 @router.get(
-    path="/{time_period}",
-    response_model=list[FlashOut]
+    path="/{time_period}"
 )
 @inject
 async def get_flashes_by_user(
@@ -291,13 +298,14 @@ async def get_flashes_by_user(
 )
 @inject
 async def delete_flashes_last_day(
+    file: str | None = None,
     user: UserOut = Security(get_current_user, scopes=[Permission.REMOVE_MY_UPLOADED_FLASHES]),
     remove_flashes_last_day: RemoveFlashesLastDay = Depends(Provide["services.remove_flashes_last_day"])
 ):
     """
     This endpoint deletes all flashes uploaded by the authenticated user within the last hour.
     """
-    deleted = await remove_flashes_last_day(user_id=user.id)
+    deleted = await remove_flashes_last_day(user_id=user.id, file=file)
 
     if not deleted:
         raise HTTPException(

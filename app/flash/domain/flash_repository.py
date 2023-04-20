@@ -15,11 +15,19 @@ class FlashRepository(ABC):
         pass
 
     @abstractmethod
+    async def exists_file(self, file: str) -> bool:
+        pass
+
+    @abstractmethod
     async def find_by_user(self, user_id: ValueId, start_date: datetime) -> list[FlashOut]:
         pass
 
     @abstractmethod
-    async def delete_many_by_user(self, user_id: ValueId, start_date: datetime) -> bool:
+    async def delete_many_by_user(self, user_id: ValueId, start_date: datetime, file: str | None = None) -> bool:
+        pass
+
+    @abstractmethod
+    async def find_files_by(self, user_id: ValueId, start_date: datetime) -> list[str]:
         pass
 
     @abstractmethod
