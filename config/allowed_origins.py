@@ -1,5 +1,5 @@
+from os import getenv
+
 ALLOWED_ORIGINS = [
-    "http://127.0.0.1:8080",
-    "http://localhost:8080",
-    "https://lightspot.vercel.app"
+    getenv("CLIENT_URL")
 ]
