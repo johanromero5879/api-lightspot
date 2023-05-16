@@ -1,4 +1,4 @@
-from app.flash.domain import FlashRepository, FlashQuery, TimeInsight, MostActivity, Year, Insight, MostTimeOfDay
+from app.flash.domain import FlashRepository, FlashQuery, TimeInsight, MostActivity, Year, Insight, MostPeriodOfDay
 from app.flash.application import FlashesNotFoundError
 
 MONTHS = {
@@ -40,10 +40,11 @@ class GetInsights:
         # set locations
         insights.location = dict()
         for city in cities:
+            insights.total += city["total"]
             name = city["city"]
 
-            insights.location[name] = city["total"]
-            insights.total += city["total"]
+            if name:
+                insights.location[name] = city["total"]
 
         return insights
 
@@ -71,16 +72,16 @@ class GetInsights:
                 most_activity.total = item["total"]
 
         hours = await self.__flash_repository.count_hourly(query, utc_offset)
-        times_of_day = self.get_times_of_day(hours)
-        most_time_of_day = self.get_most_time_of_day(times_of_day)
+        periods_of_day = self.get_periods_of_day(hours)
+        most_period_of_day = self.get_most_period_of_day(periods_of_day)
         hours_dict = self.get_hours(hours)
 
         return TimeInsight(
             most_activity=most_activity,
             years=years,
-            times_of_day=times_of_day,
+            periods_of_day=periods_of_day,
             hours=hours_dict,
-            most_time_of_day=most_time_of_day
+            most_period_of_day=most_period_of_day
         )
 
     def get_months_dict(self):
@@ -111,8 +112,8 @@ class GetInsights:
 
         return hour
 
-    def get_times_of_day(self, hours: list[dict[str, int]]):
-        times_of_day = {
+    def get_periods_of_day(self, hours: list[dict[str, int]]):
+        periods_of_day = {
             "Early morning": 0,
             "Morning": 0,
             "Afternoon": 0,
@@ -121,25 +122,25 @@ class GetInsights:
 
         for item in hours:
             if 0 <= item["hour"] < 6:
-                times_of_day["Early morning"] += item["total"]
+                periods_of_day["Early morning"] += item["total"]
                 continue
 
             if 6 <= item["hour"] < 12:
-                times_of_day["Morning"] += item["total"]
+                periods_of_day["Morning"] += item["total"]
                 continue
 
             if 12 <= item["hour"] < 19:
-                times_of_day["Afternoon"] += item["total"]
+                periods_of_day["Afternoon"] += item["total"]
                 continue
 
             if 19 <= item["hour"] <= 23:
-                times_of_day["Evening"] += item["total"]
+                periods_of_day["Evening"] += item["total"]
                 continue
 
-        return times_of_day
+        return periods_of_day
 
-    def get_most_time_of_day(self, times_of_day: dict[str, int]) -> MostTimeOfDay:
-        times = [{"name": key, "total": value} for key, value in times_of_day.items()]
-        most_time = max(times, key=lambda time: time["total"])
+    def get_most_period_of_day(self, periods_of_day: dict[str, int]) -> MostPeriodOfDay:
+        times = [{"name": key, "total": value} for key, value in periods_of_day.items()]
+        most_period = max(times, key=lambda time: time["total"])
 
-        return MostTimeOfDay(name=most_time["name"], total=most_time["total"])
+        return MostPeriodOfDay(name=most_period["name"], total=most_period["total"])

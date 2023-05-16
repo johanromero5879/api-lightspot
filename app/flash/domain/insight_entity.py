@@ -7,7 +7,7 @@ class MostActivity(BaseModel):
     total: int = 0
 
 
-class MostTimeOfDay(BaseModel):
+class MostPeriodOfDay(BaseModel):
     name: str
     total: int = 0
 
@@ -20,8 +20,8 @@ class Year(BaseModel):
 class TimeInsight(BaseModel):
     most_activity: MostActivity
     years: dict[str, Year]
-    times_of_day: dict[str, int]
-    most_time_of_day: MostTimeOfDay
+    periods_of_day: dict[str, int]
+    most_period_of_day: MostPeriodOfDay
     hours: dict[str, int]
 
 
