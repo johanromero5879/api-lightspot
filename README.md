@@ -12,7 +12,7 @@
 An API to handle lightning activity data provided by [WWLLN](http://wwlln.net/) and uses geocode services.
 
 ### Requirements
-- Python 3.11
+- Python 3.11.3
 
 ### Install Nominatim Server
 If you want to **use geolocation services**, you must **install an own server**. 
