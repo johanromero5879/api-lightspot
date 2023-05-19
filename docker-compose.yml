@@ -1,0 +1,51 @@
+version: '3.9'
+services:
+  server:
+    image: api-lightspot
+    container_name: server
+    restart: always
+    build: .
+    environment:
+      - ENV=${ENV}
+      - PORT=${PORT}
+      - JWT_SECRET=${JWT_SECRET}
+      - MONGO_URI=${MONGO_URI}
+      - SMTP_SERVER=${SMTP_SERVER}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - CLIENT_URL=${CLIENT_URL}
+      - GEOLOCATOR_API=${GEOLOCATOR_API}
+    ports:
+      - "${PORT}:3000"
+    volumes:
+      - .:/code
+    depends_on:
+      mongo:
+        condition: service_started
+      nominatim-colombia:
+        condition: service_started
+  mongo:
+    image: mongo
+    container_name: mongo
+    restart: always
+    environment:
+      - MONGO_INITDB_DATABASE=lightspot
+    ports:
+      - "27017:27017"
+    volumes:
+      - /data/mongo:/data/db
+    logging:
+      driver: none
+  nominatim-colombia:
+    image: mediagis/nominatim:4.2
+    container_name: nominatim-colombia
+    restart: always
+    environment:
+      - PBF_URL=https://download.geofabrik.de/south-america/colombia-latest.osm.pbf
+      - REPLICATION_URL=https://download.geofabrik.de/south-america/colombia-updates/
+      - UPDATE_MODE=continuous
+      - REVERSE_ONLY=true
+    ports:
+      - "8000:8080"
+    logging:
+      driver: none
