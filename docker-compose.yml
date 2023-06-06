@@ -24,6 +24,8 @@ services:
         condition: service_started
       nominatim-colombia:
         condition: service_started
+    networks:
+      - lightspot-network
   mongo:
     image: mongo
     container_name: mongo
@@ -36,6 +38,8 @@ services:
       - /data/mongo:/data/db
     logging:
       driver: none
+    networks:
+      - lightspot-network
   nominatim-colombia:
     image: mediagis/nominatim:4.2
     container_name: nominatim-colombia
@@ -47,5 +51,14 @@ services:
       - REVERSE_ONLY=true
     ports:
       - "8000:8080"
+    volumes:
+      - /data/nominatim:/var/lib/postgresql/14/main
+      - /data/osm-maps:/nominatim/data
     logging:
       driver: none
+    networks:
+      - lightspot-network
+networks:
+  lightspot-network:
+    name: lightspot-network
+    driver: bridge
